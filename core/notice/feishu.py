@@ -11,31 +11,39 @@ def send_feishu_message(webhook_url, title, text):
     - text: Markdown 格式内容
     """
     headers = {'Content-Type': 'application/json'}
-    data = {
-        "msg_type": "interactive",
-        "card": {
-            "config": {
-                "wide_screen_mode": True,
-                "enable_forward": True
-            },
-            "elements": [
-                {
-                    "tag": "div",
-                    "text": {
-                        "content": text,
-                        "tag": "lark_md"
+    if not str(title or "").strip():
+        data = {
+            "msg_type": "text",
+            "content": {
+                "text": text
+            }
+        }
+    else:
+        data = {
+            "msg_type": "interactive",
+            "card": {
+                "config": {
+                    "wide_screen_mode": True,
+                    "enable_forward": True
+                },
+                "elements": [
+                    {
+                        "tag": "div",
+                        "text": {
+                            "content": text,
+                            "tag": "lark_md"
+                        }
                     }
-                }
-            ],
-            "header": {
-                "template": "blue",
-                "title": {
-                    "content": title,
-                    "tag": "plain_text"
+                ],
+                "header": {
+                    "template": "blue",
+                    "title": {
+                        "content": title,
+                        "tag": "plain_text"
+                    }
                 }
             }
         }
-    }
     try:
         response = requests.post(
             url=webhook_url,
