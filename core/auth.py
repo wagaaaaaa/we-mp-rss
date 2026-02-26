@@ -12,11 +12,13 @@ from core.models import User
 import core.db  as db
 from passlib.context import CryptContext
 import json
+import os
 
 DB=db.Db(tag="用户连接")
 SECRET_KEY = cfg.get("secret","csol2025")  # 生产环境应使用更安全的密钥
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(cfg.get("token_expire_minutes",30))
+DISABLE_AUTH = os.getenv("DISABLE_AUTH", "").strip().lower() in ("1", "true", "yes", "on")
 
 class PasswordHasher:
     """自定义密码哈希器，替代passlib的CryptContext"""
@@ -126,6 +128,16 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     """获取当前用户"""
+    if DISABLE_AUTH:
+        # Completely bypass auth in local/private deployments.
+        return {
+            "username": "admin",
+            "role": "admin",
+            "permissions": [],
+            "original_user": None,
+            "auth_disabled": True,
+        }
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

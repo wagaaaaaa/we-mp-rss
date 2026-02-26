@@ -116,7 +116,9 @@ def start_job(job_id:str=None):
 def start_all_task():
       #开启自动同步未同步 文章任务
     from jobs.fetch_no_article import start_sync_content
+    from jobs.auth_monitor import start_auth_monitor
     start_sync_content()
+    start_auth_monitor()
     start_job()
 if __name__ == '__main__':
     # do_job()

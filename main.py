@@ -8,6 +8,11 @@ if __name__ == '__main__':
     print("环境变量:")
     for k,v in os.environ.items():
         print(f"{k}={v}")
+    try:
+        from jobs.auth_monitor import start_auth_monitor
+        start_auth_monitor()
+    except Exception as e:
+        print_warning(f"登录失效自动巡检启动失败: {e}")
     if cfg.args.init=="True":
         import init_sys as init
         init.init()

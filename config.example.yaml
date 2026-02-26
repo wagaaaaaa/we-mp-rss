@@ -6,6 +6,12 @@ server:
    web_name: ${WEB_NAME:-WeRSS微信公众号订阅助手}
    #过期是否发送授权二维通知 默认True
    send_code: ${SEND_CODE:-True}
+   #是否开启登录失效自动巡检 默认True
+   auto_auth_monitor: ${AUTO_AUTH_MONITOR:-True}
+   #登录失效巡检间隔（分钟）默认5
+   auth_check_interval: ${AUTH_CHECK_INTERVAL:-5}
+   #重复告警冷却时间（秒）默认900
+   auth_alert_cooldown: ${AUTH_ALERT_COOLDOWN:-900}
    #二维通知标题
    code_title: ${CODE_TITLE:-WeRSS}
    #启动JOB定时任务，默认为True
