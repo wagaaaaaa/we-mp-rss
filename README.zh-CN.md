@@ -69,7 +69,9 @@ docker run -d  --name we-mp-rss  -p 8001:8001 -v ./data:/app/data  docker.1ms.ru
 - 支持多种抓取方式
 - 支持多种RSS客户端
 - 支持授权过期提醒
+- 支持登录失效自动巡检（可配置检查间隔与告警冷却）
 - 支持自定义通知渠道
+- 支持自动加载 `.env` 配置文件
 - 支持自定义RSS标题、描述、封面
 - 支持自定义RSS分页大小
 - 支持导出md/docx/pdf/json格式
@@ -164,6 +166,9 @@ http://localhost:3000
 | `WERSS_AUTH_WEB` | `False` | 通过web方式授权 |
 | `BROWSER_TYPE` | `firefox` | 浏览器类型默认firefox |
 | `SEND_CODE` | `True` | 是否发送授权二维码通知 |
+| `AUTO_AUTH_MONITOR` | `True` | 是否开启登录失效自动巡检 |
+| `AUTH_CHECK_INTERVAL` | `5` | 自动巡检间隔（分钟） |
+| `AUTH_ALERT_COOLDOWN` | `900` | 重复告警冷却时间（秒） |
 | `CODE_TITLE` | `WeRSS授权二维码` | 二维码通知标题 |
 | `ENABLE_JOB` | `True` | 是否启用定时任务 |
 | `AUTO_RELOAD` | `False` | 代码修改自动重启服务 |
@@ -206,6 +211,16 @@ http://localhost:3000
 | `EXPORT_MARKDOWN` | `False` | 是否启用markdown导出功能 |
 | `EXPORT_MARKDOWN_DIR` | `./data/markdown` | markdown导出目录 |
 
+### 额外环境变量（不在 `config.yaml` 中）
+
+以下变量直接从系统环境读取：
+
+| 环境变量 | 默认值 | 描述 |
+|----------|--------|------|
+| `DISABLE_AUTH` | `False` | 为 `true/1/yes/on` 时跳过接口鉴权（仅建议本地/内网使用） |
+| `FEISHU_APP_ID` | 空 | 飞书应用 App ID，用于上传二维码图片 |
+| `FEISHU_APP_SECRET` | 空 | 飞书应用 App Secret，用于上传二维码图片 |
+
 # 使用说明
 
 1. 启动服务后，访问 `http://<您的IP>:8001` 进入管理界面。
@@ -222,6 +237,20 @@ http://localhost:3000
 
 - **如何调整定时任务间隔？**
   修改 `config.yaml` 中的 `interval` 或通过环境变量 `SPAN_INTERVAL` 设置。
+
+- **登录失效后如何自动发二维码通知？**
+  1、确保 `SEND_CODE=True`。  
+  2、确保 `AUTO_AUTH_MONITOR=True`。  
+  3、按需调整 `AUTH_CHECK_INTERVAL`（分钟）与 `AUTH_ALERT_COOLDOWN`（秒）。
+
+- **为什么飞书只收到文本，没有二维码图片？**
+  如果未配置 `FEISHU_APP_ID` 和 `FEISHU_APP_SECRET`，系统会降级为文本通知。
+
+- **如何临时关闭 API 鉴权（仅本地/内网）？**
+  设置环境变量 `DISABLE_AUTH=true`（或 `1/yes/on`）后，接口鉴权会被跳过。
+
+- **是否还需要额外运行 PowerShell 监控脚本？**
+  不需要。当前推荐使用内置 `AUTO_AUTH_MONITOR` 巡检，不再依赖 `tools/monitor_feishu_qrcode.py`。
 
 - **如何开启定时任务？**
   1、修改 `config.yaml` 中的 `ENABLE_JOB` 或通过环境变量 `ENABLE_JOB` 设置 为True。

@@ -20,4 +20,3 @@ doc2pdf/*.docx
 doc2pdf/*.pdf
 demo.txt
 test.yaml
-tools/monitor_feishu_qrcode.env

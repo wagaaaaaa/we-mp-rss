@@ -66,7 +66,9 @@ A tool for subscribing to and managing WeChat Official Account content, providin
 - Multiple scraping methods support
 - Multiple RSS client support
 - Authorization expiration reminders
+- Auto monitoring for expired auth (configurable check interval and alert cooldown)
 - Custom notification channels
+- Automatic `.env` loading support
 - Custom RSS title, description, and cover
 - Custom RSS pagination size
 - Export to md/docx/pdf/json formats
@@ -158,7 +160,11 @@ The following are the environment variable configurations supported in `config.y
 | `APP_NAME` | `we-mp-rss` | Application name |
 | `SERVER_NAME` | `we-mp-rss` | Server name |
 | `WEB_NAME` | `WeRSS微信公众号订阅助手` | Frontend display name |
+| `WERSS_AUTH_WEB` | `False` | Use web-based auth flow |
 | `SEND_CODE` | `True` | Whether to send authorization QR code notifications |
+| `AUTO_AUTH_MONITOR` | `True` | Whether to enable automatic auth-expiry monitor |
+| `AUTH_CHECK_INTERVAL` | `5` | Auth monitor check interval (minutes) |
+| `AUTH_ALERT_COOLDOWN` | `900` | Cooldown between repeated auth alerts (seconds) |
 | `CODE_TITLE` | `WeRSS授权二维码` | QR code notification title |
 | `ENABLE_JOB` | `True` | Whether to enable scheduled tasks |
 | `AUTO_RELOAD` | `False` | Auto-restart service on code changes |
@@ -197,6 +203,32 @@ The following are the environment variable configurations supported in `config.y
 | `LOG_FILE` | Empty | Log file path |
 | `LOG_LEVEL` | `INFO` | Log level |
 | `EXPORT_PDF` | `False` | Whether to enable PDF export functionality |
+
+### Extra Environment Variables (Not in `config.yaml`)
+
+These values are read directly from process environment:
+
+| Environment Variable | Default Value | Description |
+|----------|--------|------|
+| `DISABLE_AUTH` | `False` | If `true/1/yes/on`, API auth is bypassed (recommended only for local/private deployments) |
+| `FEISHU_APP_ID` | Empty | Feishu App ID used for QR image upload |
+| `FEISHU_APP_SECRET` | Empty | Feishu App Secret used for QR image upload |
+
+## FAQ
+
+- **How to auto-send QR code when auth expires?**  
+  1. Set `SEND_CODE=True`.  
+  2. Set `AUTO_AUTH_MONITOR=True`.  
+  3. Tune `AUTH_CHECK_INTERVAL` (minutes) and `AUTH_ALERT_COOLDOWN` (seconds).
+
+- **Why do I only receive text on Feishu but no QR image?**  
+  If `FEISHU_APP_ID` / `FEISHU_APP_SECRET` are missing, notification falls back to text.
+
+- **How to temporarily bypass API auth (local/private only)?**  
+  Set `DISABLE_AUTH=true` (or `1/yes/on`) in environment variables.
+
+- **Do I still need an extra PowerShell monitor script?**  
+  No. Use built-in `AUTO_AUTH_MONITOR`; external `tools/monitor_feishu_qrcode.py` is no longer required.
 
 
 

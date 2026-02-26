@@ -5,6 +5,52 @@ import argparse
 from string import Template
 from core.print import print_warning, print_error,print_info
 from .file import FileCrypto
+try:
+    from dotenv import load_dotenv
+except Exception:
+    load_dotenv = None
+
+
+def _load_env_file_fallback(env_path: str):
+    """Fallback loader that strips UTF-8 BOM and supports KEY=VALUE lines."""
+    try:
+        with open(env_path, "r", encoding="utf-8-sig") as f:
+            for raw_line in f:
+                line = raw_line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, value = line.split("=", 1)
+                key = key.strip()
+                if key.lower().startswith("export "):
+                    key = key[7:].strip()
+                if not key:
+                    continue
+                value = value.strip()
+                if len(value) >= 2 and (
+                    (value[0] == '"' and value[-1] == '"')
+                    or (value[0] == "'" and value[-1] == "'")
+                ):
+                    value = value[1:-1]
+                os.environ.setdefault(key, value)
+    except Exception:
+        pass
+
+
+def _load_default_env_files():
+    """Load optional local env files before config interpolation."""
+    for env_path in (".env",):
+        try:
+            if os.path.exists(env_path):
+                if load_dotenv is not None:
+                    load_dotenv(dotenv_path=env_path, override=False, encoding="utf-8")
+                _load_env_file_fallback(env_path)
+        except Exception:
+            # Keep config startup resilient even if env file is malformed.
+            pass
+
+
+_load_default_env_files()
+
 class Config: 
     config_path=""
     config={}
